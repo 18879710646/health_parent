@@ -1,0 +1,7 @@
+# Project exclude paths
+/health_common/target/
+/health_dao/target/
+/health_pojo/target/
+/health_service/target/
+/health_web/target/
+/SpringSecurty_demo/target/

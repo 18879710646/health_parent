@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.org.Jobs"/>
+    <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="jobDetail">
+        <property name="targetObject" ref="cleanImgJob"/>
+        <property name="targetMethod" value="clean7NiuImgJob"/>
+<!--         表示为不并发，如果是true，那么就是并发执行-->
+        <property name="concurrent" value="false"/>
+     </bean>
+    <bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean" id="trigger">
+        <property name="cronExpression" value="0/30 * * * * ?"/>
+        <property name="jobDetail" ref="jobDetail"/>
+    </bean>
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="trigger"/>
+            </list>
+        </property>
+    </bean>
+    <import resource="classpath:applicationContext-dao.xml"/>
+</beans>

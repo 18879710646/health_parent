@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+<!--     配置静态资源过滤：匿名访问-->
+<!--     pattern:表示路径
+           security="none" 表示为不拦截
+-->
+    <security:http pattern="/js/**" security="none"/>
+    <security:http pattern="/login.html" security="none"/>
+    <security:http pattern="/fail.html" security="none"/>
+    <security:http pattern="/403.html" security="none"/>
+
+<!--     auto-config表示为在security中会自动配置一些数据，所以我们要为true (创建登入页面，权限认证 ，退出)
+          use-expressions :是否使用表达式：access表达式 false：表示为不使用，access必须以ROLE开始，否则会报错
+-->
+   <security:http auto-config="true" use-expressions="true">
+<!--        intercept-url定义拦截Url
+        pattern：表示为拦截哪些url，匹配的规则
+        access表示时访问需要的权限
+               login-page="/login.html"    自定义注册页面
+                login-processing-url="/login"  自定义请求的url
+                 username-parameter="username"  表示为请求的参数  @PathPasm("username")
+                 password-parameter="password"      表示为请求的参数  @PathPasm("password")
+                  authentication-failure-url="/fail.html"    登入失败后出现的页面
+                   default-target-url="/index.html"     登入成功后出现的页面
+                   always-use-default-target="true"   表示登入直接返回index.html成功页面
+
+                    always-use-default-target="false"   表示为返回上一个需要登入，但是返回登入页面之前的页面
+                    就像是不登入逛淘宝，在进行加入购物车后，因为没有登入，所以返回了登入页面，进行登入后，将返回加入购物车页面
+
+-->
+        <security:form-login
+
+                login-page="/login.html"
+                login-processing-url="/login"
+                username-parameter="username"
+                password-parameter="password"
+                authentication-failure-url="/fail.html"
+                default-target-url="/index.html"
+                always-use-default-target="false"
+        />
+<!--        关闭csrf跨越访问控制-->
+        <security:csrf disabled="true"/>
+<!--        <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>-->
+<!--       &lt;!&ndash;只要认证通过就可以访问&ndash;&gt;-->
+<!--      <security:intercept-url pattern="/index.html" access="isAuthenticated()"/>-->
+<!--       &lt;!&ndash;拥有ROLE_ADMIN角色就可以访问c.html页面，-->
+<!--    注意：此处虽然写的是ADMIN角色，框架会自动加上前缀ROLE_  在hasRole中会自动加上ROLE_为前缀&ndash;&gt;-->
+<!--       <security:intercept-url pattern="/a.html" access="hasRole('ADMIN')"/>-->
+<!--       &lt;!&ndash;拥有add权限就可以访问b.html页面&ndash;&gt;-->
+<!--       <security:intercept-url pattern="/b.html" access="hasAuthority('add')"/>-->
+<!--        <security:intercept-url pattern="/c.html" access="hasAuthority('delete')"/>-->
+<!--       &lt;!&ndash;拥有ROLE_ADMIN角色就可以访问d.html页面 ,所以不能访问，因为在实际中add已经被改为了ROLE_add&ndash;&gt;-->
+<!--       <security:intercept-url pattern="/d.html" access="hasRole('add')"/>-->
+
+<!--       如果没有权限那么就跳转到403页面-->
+       <security:access-denied-handler error-page="/403.html"/>
+<!-- tomcat会话有效时间为30min-->
+<!--         在页面中添加上一个a标签直接在上面的超文本上写上 /hello/logout-->
+<!--       退出登入  当用户访问logout_url="/logout"时表示为在进行退出操作   logout-success-url 退出登入后返回的页面是login.html     invalidate-session="true" 表示为废除session   ，当然也可以使用 delete-cookies,直接删除cookies -->
+       <security:logout logout-url="/hello/logout" logout-success-url="/login.html" invalidate-session="true"/>
+   </security:http>
+
+<!--     配置认证管理器，实现认证及权限校验，提供用户名，密码，权限-->
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="userService">
+
+            <security:password-encoder ref="bCryptPasswordEncoder"/>
+
+        </security:authentication-provider>
+    </security:authentication-manager>
+<!--     把加密器注册到bean容器中了-->
+    <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="bCryptPasswordEncoder"/>
+    <bean class="com.org.Bcrypt.UserService" id="userService"/>
+    <context:component-scan base-package="com.org.Controller"/>
+<!--     开启注解权限控制-->
+    <security:global-method-security pre-post-annotations="enabled"/>
+<!--     注解驱动-->
+    <mvc:annotation-driven/>
+</beans>

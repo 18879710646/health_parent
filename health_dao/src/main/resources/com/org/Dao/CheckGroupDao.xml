@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.org.Dao.CheckGroupDao">
+    <insert id="add" parameterType="com.org.PoJo.CheckGroup">
+    <!-- selectKey 表示我们再增加数据的时候，我们有时要获取到增加数据的id,所以我们用到了 selectKey
+        keyProperty表示为你要获取到的字段名称（必须跟数据库中对应的字段名相同
+          order:表示为在什么sql语句执行之前还是之后（BEFORE/AFTER）
+          resulType：表示为传出的字段的数据类型
+        ）
+    -->
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+        insert into t_checkgroup(code,name,helpCode,sex,remark,attention)  values(
+            #{code},#{name},#{helpCode},#{sex},#{remark},#{attention}
+        )
+    </insert>
+
+    <insert id="addCheckGroupCheckItem" parameterType="int">
+        insert into t_checkgroup_checkitem(checkGroupId,checkItemId) values(
+        #{checkGroupId},#{checkItemId}
+        )
+    </insert>
+
+    <select id="findPage" parameterType="string" resultType="com.org.PoJo.CheckGroup">
+        select * from t_checkgroup
+        <where>
+            <if test="value != null and value.length >0">
+                code like #{checkGroupstring} or name like #{checkGroupstring}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" parameterType="int" resultType="com.org.PoJo.CheckGroup">
+        select * from t_checkgroup where id=#{id}
+    </select>
+
+    <select  id="findCheckItemIdsByCheckGroupId" parameterType="int" resultType="int">
+        select checkitem_id from t_checkgroup_checkitem where checkgroup_id=#{id}
+    </select>
+
+<!--     更新数据-->
+    <update id="Update" parameterType="com.org.PoJo.CheckGroup">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyColumn="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        update t_checkgroup set
+        code=#{code},
+        name=#{name},
+        helpCode=#{helpCode},
+        sex=#{sex},
+        remark=#{remark},
+        attention=#{attention}
+        where id=#{id}
+    </update>
+
+    <delete id="DeletecheckitemAndcheckGroup" parameterType="int">
+        delete  from t_checkgroup_checkitem  where  checkgroup_id=#{id}
+    </delete>
+    <insert id="insertcheckitemAndcheckGroup" parameterType="int">
+        insert into  t_checkgroup_checkitem(checkGroupId,checkItemId) values (
+             #{checkGroupId},#{checkitemId}
+        )
+    </insert>
+
+    <delete id="DeleteById" parameterType="int">
+        delete  from t_checkgroup where id=#{id}
+    </delete>
+
+    <select id="findAll" resultType="com.org.PoJo.CheckGroup">
+        select * from t_checkgroup;
+    </select>
+</mapper>
